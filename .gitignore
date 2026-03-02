@@ -1,0 +1,17 @@
+# Neuroimagem
+*.nii
+*.nii.gz
+
+# Dados
+*.csv
+*.tsv
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Ambiente
+.env
