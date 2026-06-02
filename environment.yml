@@ -1,13 +1,22 @@
 name: dynDWI
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.10
   - numpy
+  - scipy
   - pandas
   - matplotlib
-  - nibabel
-  - scipy
-  - jsonschema
   - seaborn
+  - scikit-learn
+  - scikit-image
+  - statsmodels
+  - nibabel
+  - dipy
+  - pillow
+  - tqdm
+  - pywavelets
+  - pip
+  - pip:
+      - cmasher
+      - colorspacious

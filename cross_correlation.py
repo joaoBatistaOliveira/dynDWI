@@ -10,8 +10,8 @@ from matplotlib.cm import ScalarMappable
 import matplotlib.colors as mcolors
 from matplotlib import colormaps
 import matplotlib.cm as cm
-
 import physiological_marked
+
 def substituir_none_por_nan(data):
     """
     Converte valores None para NaN em toda a estrutura de forma recursiva.
@@ -541,10 +541,9 @@ def plotar_curvas_cc_slice_roi(json_file, save_file_path=None):
         fig.savefig(save_file_path, dpi=300, bbox_inches="tight", facecolor="white")
         print(f"Figura salva em: {save_file_path}")
 
-    plt.show()
     return fig
 
-def plot_cc_global_subjects(dir_base, subjects, direction, rois, signal, show_image=False, legend_info=True):
+def plot_cc_global_subjects(dir_base, subjects, directions, rois, signal, show_image=False, legend_info=True, tipo="all"):
     """
     Plota a curva média do sinal global para cada ROI em subplots separados.
     Estilo compacto - rótulos do eixo X apenas nos plots da última linha.
@@ -583,10 +582,10 @@ def plot_cc_global_subjects(dir_base, subjects, direction, rois, signal, show_im
     delays = None
     
     # Coletar dados de todos os subjects
-    for sub in subjects:
+    for sub, direction in zip(subjects, directions):
         for roi in rois:
-            path_json = os.path.join(dir_base, sub, direction, f"Analysis/cc_media_{roi}.json")
-            
+
+            path_json = os.path.join(dir_base, sub, direction, f"Analysis/cc_media_{roi}_completo.json")
             if os.path.exists(path_json):
                 try:
                     data = physiological_marked.read_json(path_json)
@@ -604,7 +603,6 @@ def plot_cc_global_subjects(dir_base, subjects, direction, rois, signal, show_im
                 except Exception as e:
                     print(f"Erro ao processar {path_json}: {e}")
                     continue
-    
     # Verificar se temos dados para plotar
     if delays is None:
         print("Nenhum dado de delays encontrado!")
@@ -766,7 +764,7 @@ def plot_cc_global_subjects(dir_base, subjects, direction, rois, signal, show_im
     plt.tight_layout(rect=[0, 0.08, 1, 0.95])  # [left, bottom, right, top]
     
     # Salvar figura
-    save_path = os.path.join(dir_base, f"Analysis/cc_global_medio_{direction}_{signal}.png")
+    save_path = os.path.join(dir_base, f"Analysis/cc_global_medio_{direction}_{signal}_{tipo}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
     print(f"Figura salva em: {save_path}")
     
@@ -794,7 +792,9 @@ def plot_cc_global_subjects(dir_base, subjects, direction, rois, signal, show_im
         'max_correlation_points': max_corr_points,
         'subject_colors': subject_colors
     }
-def plot_cc_slices_subjects(dir_base, subjects, direction, rois, signal, show_image=False, legend_info=True):
+
+
+def plot_cc_slices_subjects(dir_base, subjects, directions, rois, signal, show_image=False, legend_info=True, tipo="all"):
     """
     Plota a curva média do sinal de todas as fatias para cada ROI em subplots separados.
     Estilo compacto - rótulos do eixo X apenas nos plots da última linha.
@@ -832,9 +832,9 @@ def plot_cc_slices_subjects(dir_base, subjects, direction, rois, signal, show_im
     delays = None
     
     # Coletar dados de todos os subjects e fatias
-    for sub in subjects:
+    for sub, direction in zip(subjects, directions):
         for roi in rois:
-            path_json = os.path.join(dir_base, sub, direction, f"Analysis/cc_media_{roi}.json")
+            path_json = os.path.join(dir_base, sub, direction, f"Analysis/cc_media_{roi}_completo.json")
             
             if os.path.exists(path_json):
                 try:
@@ -995,7 +995,7 @@ def plot_cc_slices_subjects(dir_base, subjects, direction, rois, signal, show_im
     plt.tight_layout()
     
     # Salvar figura
-    save_path = os.path.join(dir_base, f"Analysis/cc_slices_medio_{direction}_{signal}.png")
+    save_path = os.path.join(dir_base, f"Analysis/cc_slices_medio_{direction}_{signal}_{tipo}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
     print(f"Figura salva em: {save_path}")
     
@@ -1034,23 +1034,7 @@ def plot_cc_slices_subjects(dir_base, subjects, direction, rois, signal, show_im
         'slice_stats': slice_stats
     }
 
-dir_base = '/media/joao/PortableSSD/dynDWI'
-subjects = ["sub008","sub009","sub010","sub011", "sub012", "sub013","sub014", "sub015", "sub016", "sub017"]
-direction = ["dynDWI_M"]
-rois = rois = ["CSF", 'WM', 'GM', "3V", "VL", "PC"]
-dic = plot_cc_slices_subjects(dir_base = dir_base,
-                                            subjects = subjects, 
-                                            direction = direction[0], 
-                                            rois = rois,
-                                            signal = 'resp', 
-                                            show_image = True )
 
-dic = plot_cc_global_subjects(dir_base = dir_base,
-                                            subjects = subjects, 
-                                            direction = direction[0], 
-                                            rois = rois,
-                                            signal = 'ppu', 
-                                            show_image = True )
 def processar_cc_completo(path, name='GM', intervalo=3, step=0.1, respiracao_col=None, pulsacao_col=None, 
                          zscore=True, cutoff_ppu=5.0, cutoff_resp=1.0, 
                          n_controle=1000, save_plot=True):
@@ -1058,7 +1042,7 @@ def processar_cc_completo(path, name='GM', intervalo=3, step=0.1, respiracao_col
     Função de conveniência para processamento completo.
     """
     #path_roi = os.path.join(os.path.dirname(path), f"rois/{name}.nii.gz")
-    path_roi = os.path.join(path, f"rois/{name}.nii.gz")
+    path_roi = os.path.join(path, f"roi/{name}.nii.gz")
     path_adc = os.path.join(path, "Analysis/adc.nii.gz")
     path_b0 = os.path.join(path, "b0_brain_mask.nii.gz")
     path_physiological_marked = os.path.join(path, "Analysis/physiological_marked.csv")
@@ -1092,15 +1076,16 @@ def processar_cc_completo(path, name='GM', intervalo=3, step=0.1, respiracao_col
             json_file=path_output_json,
             save_file_path=save_plot_path
         )
-    
+        #plt.close()
+    plt.close()
     return resultados
 
-resultados = processar_cc_completo(
-    path="/home/joao/Documentos/Scripts_dynDWI/testes/sub014/dynDWI_S",
-    name="WM",
-    intervalo=5,
-    step=0.1,
-    save_plot=True,
-    cutoff_ppu=5, cutoff_resp=1, 
-                         n_controle=10,
-)
+# resultados = processar_cc_completo(
+#     path="/home/joao/Documentos/Scripts_dynDWI/testes/sub014/dynDWI_S",
+#     name="WM",
+#     intervalo=5,
+#     step=0.1,
+#     save_plot=True,
+#     cutoff_ppu=5, cutoff_resp=1, 
+#                          n_controle=10,
+# )

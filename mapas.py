@@ -86,7 +86,6 @@ def calculate_adc_all(masked_dynDWI, bvals, b0_threshold=50):
 
     diff_volumes = masked_dynDWI[..., indices_dwi]
     b0_mean = np.mean(masked_dynDWI[..., indices_b0], axis=3)
-    print(indices_b0)
 
     limiar = 1e-10
     adc = np.full_like(diff_volumes, np.nan)
