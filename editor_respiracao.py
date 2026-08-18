@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 class EditorRespiracao:
     def __init__(self, df, time_col="Time", resp_col="resp", 
                  peak_col="resp_peaks", valley_col="resp_valleys", 
-                 click_tolerance=15):
+                 click_tolerance=15, caminho_saida_plot=None):
         self.df = df.copy()
         self.time_col, self.resp_col = time_col, resp_col
         self.peak_col, self.valley_col = peak_col, valley_col
         self.click_tolerance = click_tolerance
         self.modo = "pico"
+        self.caminho_saida_plot = caminho_saida_plot
         
         for col in [time_col, resp_col]:
             if col not in self.df.columns:
@@ -36,9 +37,19 @@ class EditorRespiracao:
         self._atualizar_titulo()
         self.fig.canvas.mpl_connect("button_press_event", self._evento_clique)
         self.fig.canvas.mpl_connect("key_press_event", self._evento_tecla)
+        self.fig.canvas.mpl_connect("close_event", self._salvar_plot)  # Salva ao fechar
         plt.tight_layout()
         plt.show()
         return self.df
+    
+    def _salvar_plot(self, event=None):
+        """Salva o plot final quando a janela é fechada."""
+        if self.caminho_saida_plot:
+            try:
+                self.fig.savefig(self.caminho_saida_plot, dpi=100, bbox_inches="tight")
+                print(f"\nPlot salvo em:\n{self.caminho_saida_plot}")
+            except Exception as e:
+                print(f"\nErro ao salvar plot: {e}")
 
     def _atualizar_marcadores(self):
         for plot in [self.peak_plot, self.valley_plot]:
@@ -96,9 +107,20 @@ class EditorRespiracao:
 
 def editar_respiracao(caminho_csv, time_col="Time", resp_col="resp", 
                       peak_col="resp_peaks", valley_col="resp_valleys", 
-                      click_tolerance=15, caminho_saida=None):
+                      click_tolerance=15, caminho_saida=None, salvar_plot=True):
     df = pd.read_csv(caminho_csv)
-    df_editado = EditorRespiracao(df, time_col, resp_col, peak_col, valley_col, click_tolerance).iniciar()
+    
+    # Define caminho para salvar o plot
+    caminho_plot = None
+    if salvar_plot:
+        if caminho_saida:
+            base = os.path.splitext(caminho_saida)[0]
+        else:
+            base = os.path.splitext(caminho_csv)[0]
+        caminho_plot = f"{base}_resp_mark.png"
+    
+    df_editado = EditorRespiracao(df, time_col, resp_col, peak_col, valley_col, 
+                                  click_tolerance, caminho_plot).iniciar()
     
     if caminho_saida is None:
         base, ext = os.path.splitext(caminho_csv)

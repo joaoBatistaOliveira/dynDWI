@@ -503,6 +503,7 @@ def plot_gradients(df, nrows=10, figsize=(15, 20), title="Gradientes", save=Fals
 
     if show:
         plt.show()
+    plt.close()
 
 def computar_1_2_derivadas_ppu(df):
     window_length = 51  #(deve ser ímpar)
@@ -1405,7 +1406,7 @@ def fisio_t1(
         print(f"dados salvos em: {save_dir}")
     return df
 
-json_path = '/run/media/joao-oliveira/PortableSSD/dynDWI_V2/sub032/dynDWI_S/ScanPsaLog.log'
+"""json_path = '/run/media/joao-oliveira/PortableSSD/dynDWI_V2/sub032/dynDWI_S/ScanPsaLog.log'
 csv_path = '/run/media/joao-oliveira/PortableSSD/dynDWI_V2/sub032/dynDWI_S/Analysis/Physiological_marked.csv'
 df =fisio_add_flags(
     phys_path=json_path,
@@ -1422,3 +1423,4 @@ print(df.columns)
 #df = pd.read_csv("/run/media/joao-oliveira/PortableSSD/dynDWI_V2/epi003/dynDWI_MS/Analysis/physiological_marked.csv")
 #df = tempo_de_bloco_de_fatia(df, grad='MS')
 #cq_temporal(df)
+"""
